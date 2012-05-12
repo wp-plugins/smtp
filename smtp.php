@@ -1,12 +1,15 @@
 <?php
 /*
 Plugin Name: SMTP
-Version: 1.0
-Plugin URI: http://hel.io/wordpress/smtp
+Version: 1.1
+Plugin URI: http://hel.io/wordpress/smtp/
 Description: Allows you to configure and use a SMTP server (such as Gmail) for sending emails.
 Author: Sorin Iclanzan
 Author URI: http://hel.io/
 */
+
+// Key used for encrypting and decrypting passwords
+define( CRYPT_KEY, '-J5:2Yqd?Ri9wLjN' );
 
 // This is run when you activate the plugin, adding the default options to the database
 register_activation_hook(__FILE__,'smtp_activation');
@@ -148,7 +151,7 @@ function smtp_username() {
 }
 function smtp_password() {
     $options = get_option('smtp_options');
-    echo "<input id='password' name='smtp_options[password]' type='text' class='regular-text' value='{$options['password']}' />";
+    echo "<input id='password' name='smtp_options[password]' type='password' value='' " . $options['password'] ? "placeholder='&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;'" : "" . " />";
 }
 
 function smtp_options_validate($input) {
@@ -172,8 +175,24 @@ function smtp_options_validate($input) {
     $input['password'] = stripslashes(wp_filter_kses(addslashes(strip_tags($input['password']))));
     if ($input['password'] == '')
         $input['password'] = $smtp_options['password'];
+    else
+        $input['password'] = encrypt_string( $input['password'], CRYPT_KEY );
     
     return $input;
+}
+
+/*
+ * Encrypt $string using $key
+ */
+function encrypt_string( $string, $key ) {
+    return base64_encode(mcrypt_encrypt(MCRYPT_RIJNDAEL_256, md5($key), $string, MCRYPT_MODE_CBC, md5(md5($key))));
+}
+
+/*
+ * Decrypt $string using $key
+ */
+function decrypt_string( $string, $key ) {
+    return rtrim(mcrypt_decrypt(MCRYPT_RIJNDAEL_256, md5($key), base64_decode($encrypted), MCRYPT_MODE_CBC, md5(md5($key))), "\0");
 }
 
 // This makes the magic happen
@@ -205,6 +224,6 @@ function smtp_phpmailer_init($phpmailer) {
     if ($smtp_options['username'] != '') {
         $phpmailer->SMTPAuth = true;
         $phpmailer->Username = $smtp_options['username'];
-        $phpmailer->Password = $smtp_options['password'];
+        $phpmailer->Password = decrypt_string( $smtp_options['password'], CRYPT_KEY );
     }
 }
