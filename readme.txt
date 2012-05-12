@@ -3,8 +3,8 @@ Contributors: hel.io
 Donate link: http://hel.io/donate/
 Tags: smtp, email, mail, wp_mail, mailer, phpmailer
 Requires at least: 3.0
-Tested up to: 3.1.3
-Stable tag: 1.0
+Tested up to: 3.3.0
+Stable tag: 1.1
 
 Allows you to configure and use a SMTP server (such as Gmail) for sending emails.
 
@@ -48,3 +48,7 @@ Password: gmail password
 
 = 1.0 =
 * Initial release.
+
+= 1.1 =
+* The password field is of type password instead of text and does not display your saved password 
+* Now storing encrypted passwords in the database (Make sure you re-enter your password if you are updating)

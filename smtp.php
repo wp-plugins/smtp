@@ -9,43 +9,43 @@ Author URI: http://hel.io/
 */
 
 // Key used for encrypting and decrypting passwords
-define( CRYPT_KEY, '-J5:2Yqd?Ri9wLjN' );
+define( 'CRYPT_KEY', '-J5:2Yqd?Ri9wLjN' );
 
 // This is run when you activate the plugin, adding the default options to the database
 register_activation_hook(__FILE__,'smtp_activation');
 function smtp_activation() {
-	
-	// Default options
-	$smtp_options = array (
+    
+    // Default options
+    $smtp_options = array (
         'host' => 'http://localhost',
         'port' => '25',
         'smtp_secure' => '',
         'username' => '',
         'password' => ''
     );
-	
-	// Add options
-	add_option('smtp_options',$smtp_options);
-	
+    
+    // Add options
+    add_option('smtp_options',$smtp_options);
+    
 }
 
 // Add options page in the admin menu
 add_action('admin_menu','smtp_menu');
 function smtp_menu() {
-	add_options_page('SMTP Settings', 'SMTP', 'manage_options', 'smtp', 'smtp_options_page');
+    add_options_page('SMTP Settings', 'SMTP', 'manage_options', 'smtp', 'smtp_options_page');
 }
 
 // Add "Settings" link to the plugins page
 add_filter( 'plugin_action_links', 'smtp_action_links',10,2);
 function smtp_action_links( $links, $file ) {
-	if ( $file != plugin_basename( __FILE__ ))
-		return $links;
+    if ( $file != plugin_basename( __FILE__ ))
+        return $links;
 
-	$settings_link = '<a href="options-general.php?page=smtp">Settings</a>';
+    $settings_link = '<a href="options-general.php?page=smtp">Settings</a>';
 
-	array_unshift( $links, $settings_link );
+    array_unshift( $links, $settings_link );
 
-	return $links;
+    return $links;
 }
 
 // Display options page
@@ -78,8 +78,8 @@ function smtp_options_page() {
                 </div>
                 <?php
             }    
-	}
-	
+    }
+    
     ?>
     <div class="wrap">
         <h2>SMTP Settings</h2>
@@ -151,7 +151,10 @@ function smtp_username() {
 }
 function smtp_password() {
     $options = get_option('smtp_options');
-    echo "<input id='password' name='smtp_options[password]' type='password' value='' " . $options['password'] ? "placeholder='&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;'" : "" . " />";
+    $placeholder = '';
+    if ( $options['password'] )
+        $placeholder = '&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;';
+    echo "<input id='password' name='smtp_options[password]' type='password' value='' placeholder='{$placeholder}' />";
 }
 
 function smtp_options_validate($input) {
@@ -185,20 +188,20 @@ function smtp_options_validate($input) {
  * Encrypt $string using $key
  */
 function encrypt_string( $string, $key ) {
-    return base64_encode(mcrypt_encrypt(MCRYPT_RIJNDAEL_256, md5($key), $string, MCRYPT_MODE_CBC, md5(md5($key))));
+    return base64_encode( mcrypt_encrypt( MCRYPT_RIJNDAEL_256, md5( $key ), $string, MCRYPT_MODE_CBC, md5( md5( $key ) ) ) );
 }
 
 /*
  * Decrypt $string using $key
  */
 function decrypt_string( $string, $key ) {
-    return rtrim(mcrypt_decrypt(MCRYPT_RIJNDAEL_256, md5($key), base64_decode($encrypted), MCRYPT_MODE_CBC, md5(md5($key))), "\0");
+    return rtrim( mcrypt_decrypt( MCRYPT_RIJNDAEL_256, md5( $key ), base64_decode( $string ), MCRYPT_MODE_CBC, md5( md5( $key ) ) ), "\0" );
 }
 
 // This makes the magic happen
 add_action('phpmailer_init','smtp_phpmailer_init');
 function smtp_phpmailer_init($phpmailer) {
-		
+        
     $smtp_options = get_option('smtp_options');
     $admin_info = get_userdata(1);
     
