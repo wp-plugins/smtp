@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: SMTP
-Version: 1.1
+Version: 1.1.1
 Plugin URI: http://hel.io/wordpress/smtp/
 Description: Allows you to configure and use a SMTP server (such as Gmail) for sending emails.
 Author: Sorin Iclanzan
@@ -167,7 +167,7 @@ function smtp_password() {
     $placeholder = '';
     if ( $options['password'] )
         $placeholder = '&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;';
-    echo "<input id='password' name='smtp_options[password]' type='password' value='' placeholder='{$placeholder}' />";
+    echo "<input id='password' name='smtp_options[password]' type='password' class='regular-text' value='' placeholder='{$placeholder}' />";
 }
 
 function smtp_options_validate($input) {
