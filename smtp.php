@@ -14,6 +14,19 @@ define( 'CRYPT_KEY', '-J5:2Yqd?Ri9wLjN' );
 // This is run when you activate the plugin, adding the default options to the database
 register_activation_hook(__FILE__,'smtp_activation');
 function smtp_activation() {
+    // Check for compatibility
+    try {
+        // check mycrypt
+        if(!function_exists('mcrypt_encrypt')) {
+            throw new Exception(__('Please enable \'php_mycrypt\' in PHP. It is needed to encrypt passwords.', 'smtp'));
+        }
+    }
+    catch(Exception $e) {
+        $plugin_basename = dirname(plugin_basename(__FILE__));
+        deactivate_plugins($plugin_basename.'/backup.php', true);
+        echo '<div id="message" class="error">' . $e->getMessage() . '</div>';
+        trigger_error('Could not activate SMTP.', E_USER_ERROR);
+    }
     
     // Default options
     $smtp_options = array (
