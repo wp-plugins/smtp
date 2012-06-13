@@ -1,5 +1,5 @@
 === SMTP ===
-Contributors: hel.io, kley
+Contributors: hel.io, klay
 Donate link: http://hel.io/donate/
 Tags: smtp, email, mail, wp_mail, mailer, phpmailer
 Requires at least: 3.0
@@ -47,8 +47,8 @@ Password: gmail password
 == Changelog ==
 
 = 1.1.2 =
-* Added support for localization (thanks to [kley](http://wordpress.org/support/profile/klay))
-* Added Russian translation (thanks to [kley](http://wordpress.org/support/profile/klay))
+* Added support for localization (thanks to [klay](http://wordpress.org/support/profile/klay))
+* Added Russian translation (thanks to [klay](http://wordpress.org/support/profile/klay))
 
 = 1.1 =
 * The password field is of type password instead of text and does not display your saved password 
