@@ -47,7 +47,7 @@ Password: gmail password
 == Changelog ==
 
 = 1.1.2 =
-* Added support for localization (thanks to [klay](http://wordpress.org/support/profile/klay))
+* Added internationalization support (thanks to [klay](http://wordpress.org/support/profile/klay))
 * Added Russian translation (thanks to [klay](http://wordpress.org/support/profile/klay))
 
 = 1.1 =
