@@ -1,28 +1,41 @@
 <?php
 /*
 Plugin Name: SMTP
-Version: 1.1.1
+Version: 1.1.2
 Plugin URI: http://hel.io/wordpress/smtp/
 Description: Allows you to configure and use a SMTP server (such as Gmail) for sending emails.
 Author: Sorin Iclanzan
 Author URI: http://hel.io/
+Text Domain: smtp
+Domain Path: /language
 */
 
 // Key used for encrypting and decrypting passwords
 define( 'CRYPT_KEY', '-J5:2Yqd?Ri9wLjN' );
+// Text domain
+define( 'TEXT_DOMAIN', 'smtp' );
+// Plugin basename
+$plugin_basename = dirname( plugin_basename( __FILE__ ) );
+
+// Loads the plugin's translated strings.
+add_action( 'plugins_loaded', 'smtp_init' );
+function smtp_init() {
+  global $plugin_basename;
+  load_plugin_textdomain( TEXT_DOMAIN, false, $plugin_basename . '/language/' );
+}
 
 // This is run when you activate the plugin, adding the default options to the database
 register_activation_hook(__FILE__,'smtp_activation');
 function smtp_activation() {
+  global $plugin_basename;
     // Check for compatibility
     try {
         // check mycrypt
         if(!function_exists('mcrypt_encrypt')) {
-            throw new Exception(__('Please enable \'php_mycrypt\' in PHP. It is needed to encrypt passwords.', 'smtp'));
+            throw new Exception(__('Please enable \'php_mycrypt\' in PHP. It is needed to encrypt passwords.', TEXT_DOMAIN));
         }
     }
     catch(Exception $e) {
-        $plugin_basename = dirname(plugin_basename(__FILE__));
         deactivate_plugins($plugin_basename.'/backup.php', true);
         echo '<div id="message" class="error">' . $e->getMessage() . '</div>';
         trigger_error('Could not activate SMTP.', E_USER_ERROR);
@@ -45,7 +58,7 @@ function smtp_activation() {
 // Add options page in the admin menu
 add_action('admin_menu','smtp_menu');
 function smtp_menu() {
-    add_options_page('SMTP Settings', 'SMTP', 'manage_options', 'smtp', 'smtp_options_page');
+    add_options_page( __( 'SMTP Settings', TEXT_DOMAIN ), __( 'SMTP', TEXT_DOMAIN ) , 'manage_options', 'smtp', 'smtp_options_page');
 }
 
 // Add "Settings" link to the plugins page
@@ -54,7 +67,7 @@ function smtp_action_links( $links, $file ) {
     if ( $file != plugin_basename( __FILE__ ))
         return $links;
 
-    $settings_link = '<a href="options-general.php?page=smtp">Settings</a>';
+    $settings_link = sprintf( '<a href="options-general.php?page=smtp">%s</a>', __( 'Settings', TEXT_DOMAIN ) );
 
     array_unshift( $links, $settings_link );
 
@@ -68,8 +81,8 @@ function smtp_options_page() {
     if (isset($_POST['smtp_test']) && $_POST['smtp_test'] == 'Send' && isset($_POST['to']) && is_email($_POST['to'])) {
             
             $to = $_POST['to'];
-            $subject = 'SMTP Test';
-            $message = 'If you received this email it means you have configured SMTP correctly on your Wordpress website.';
+            $subject = __( 'SMTP Test', TEXT_DOMAIN );
+            $message = __( 'If you received this email it means you have configured SMTP correctly on your Wordpress website.', TEXT_DOMAIN );
     
             // Send the test mail
             $result = wp_mail($to, $subject, $message);
@@ -78,16 +91,16 @@ function smtp_options_page() {
             if ($result) {
                 ?>
                 <div id="message" class="updated fade">
-                <p><strong>Test Email Sent</strong></p>
-                <p>The test email was sent successfully!</p>
+                <p><strong><?php _e( 'Test Email Sent', TEXT_DOMAIN ); ?></strong></p>
+                <p><?php _e('The test email was sent successfully!', TEXT_DOMAIN ); ?></p>
                 </div>
                 <?php
             }
             else {
                 ?>
                 <div id="message" class="error">
-                <p><strong>Send Error</strong></p>
-                <p>There was an error while trying to send the test email. Please check the connection details.</p>
+                <p><strong><?php _e('Send Error', TEXT_DOMAIN ); ?></strong></p>
+                <p><?php _e('There was an error while trying to send the test email. Please check the connection details.', TEXT_DOMAIN ); ?></p>
                 </div>
                 <?php
             }    
@@ -95,29 +108,29 @@ function smtp_options_page() {
     
     ?>
     <div class="wrap">
-        <h2>SMTP Settings</h2>
+    <h2><?php _e('SMTP Settings', TEXT_DOMAIN ); ?></h2>
         
         <form action="options.php" method="post">
             <?php settings_fields('smtp_options'); ?>
             <?php do_settings_sections('smtp'); ?>
             <p class="submit">
-                <input name="submit" type="submit" class="button-primary" value="<?php _e('Save Changes') ?>" />
+                <input name="submit" type="submit" class="button-primary" value="<?php _e('Save Changes', TEXT_DOMAIN ); ?>" />
             </p>
         </form>
         
-        <h3>Send a Test Email</h3>
-        <p>Enter an email address below to send a test message.</p>
+        <h3><?php _e('Send a Test Email', TEXT_DOMAIN ); ?></h3>
+        <p><?php _e('Enter an email address below to send a test message.', TEXT_DOMAIN ); ?></p>
         <form action="options-general.php?page=smtp" method="post">
             <table class="optiontable form-table">
                 <tr valign="top">
-                    <th scope="row"><label for="to">To:</label></th>
+                    <th scope="row"><label for="to"><?php _e('To:', TEXT_DOMAIN ); ?></label></th>
                     <td>
                         <input name="to" type="text" id="to" value="" class="regular-text" />
                     </td>
                 </tr>
             </table>
             <p class="submit">
-                <input type="submit" name="smtp_test" id="smtp_test" class="button-primary" value="Send" />
+                <input type="submit" name="smtp_test" id="smtp_test" class="button-primary" value="<?php _e('Send', TEXT_DOMAIN ); ?>" />
             </p>
         </form>
         
@@ -129,22 +142,22 @@ function smtp_options_page() {
 add_action('admin_init', 'smtp_admin_init');
 function smtp_admin_init(){
     register_setting( 'smtp_options', 'smtp_options', 'smtp_options_validate' );
-    add_settings_section('smtp_main', 'Settings', 'smtp_section', 'smtp');
-    add_settings_field('host', 'Host', 'smtp_host', 'smtp', 'smtp_main');
-    add_settings_field('encryption', 'Encryption', 'smtp_encryption', 'smtp', 'smtp_main');
-    add_settings_field('username', 'Username', 'smtp_username', 'smtp', 'smtp_main');
-    add_settings_field('password', 'Password', 'smtp_password', 'smtp', 'smtp_main');
+    add_settings_section('smtp_main', __( 'Settings', TEXT_DOMAIN ), 'smtp_section', 'smtp');
+    add_settings_field('host', __( 'Host', TEXT_DOMAIN ), 'smtp_host', 'smtp', 'smtp_main');
+    add_settings_field('encryption', __( 'Encryption', TEXT_DOMAIN ), 'smtp_encryption', 'smtp', 'smtp_main');
+    add_settings_field('username', __( 'Username', TEXT_DOMAIN ), 'smtp_username', 'smtp', 'smtp_main');
+    add_settings_field('password', __('Password', TEXT_DOMAIN ), 'smtp_password', 'smtp', 'smtp_main');
 }
 
 function smtp_section() {
-    echo '<p>Please enter your SMTP connection details.</p>';
+    echo '<p>' . __( 'Please enter your SMTP connection details.', TEXT_DOMAIN ) . '</p>';
 }
 
 function smtp_host() {
     $options = get_option('smtp_options');
     echo "
         <input id='host' name='smtp_options[host]' type='text' class='regular-text' value='{$options['host']}' />
-        <label for='port'>Port</label>
+        <label for='port'>" . __( 'Port', TEXT_DOMAIN ) . "</label>
         <input id='port' name='smtp_options[port]' type='text' class='small-text' value='{$options['port']}' />
     ";
 }
@@ -152,9 +165,9 @@ function smtp_host() {
 function smtp_encryption() {
     $options = get_option('smtp_options');
     echo "
-        <label><input name='smtp_options[smtp_secure]' type='radio' class='tog' value='' ". checked('', $options['smtp_secure'], false) . " /> <span>None</span></label><br/>
-        <label><input name='smtp_options[smtp_secure]' type='radio' class='tog' value='ssl' " . checked('ssl', $options['smtp_secure'], false) . " /> <span>SSL</span></label><br/>
-        <label><input name='smtp_options[smtp_secure]' type='radio' class='tog' value='tls' " . checked('tls', $options['smtp_secure'], false) . " /> <span>TLS</span></label>
+        <label><input name='smtp_options[smtp_secure]' type='radio' class='tog' value='' ". checked('', $options['smtp_secure'], false) . " /> <span>" . __( 'None', TEXT_DOMAIN ) . "</span></label><br/>
+        <label><input name='smtp_options[smtp_secure]' type='radio' class='tog' value='ssl' " . checked('ssl', $options['smtp_secure'], false) . " /> <span>" . __( 'SSL', TEXT_DOMAIN ) . "</span></label><br/>
+        <label><input name='smtp_options[smtp_secure]' type='radio' class='tog' value='tls' " . checked('tls', $options['smtp_secure'], false) . " /> <span>" . __( 'TLS', TEXT_DOMAIN ) . "</span></label>
     ";
 }
 
